@@ -1,5 +1,5 @@
 {
-  "name": "konradx3/architect-command-bundle",
+  "name": "konradx3/architect-contao-bundle",
   "description": "Architect command bundle. Fast CTE, FMD creation.",
   "keywords": ["generator for contao", "create content element", "create frontend module", "automatisation", "architect", "contao 5"],
   "authors": [
