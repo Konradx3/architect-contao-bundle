@@ -8,7 +8,7 @@ A contao tool that allows you to quickly generate necessary files and configurat
 ## Installation
 
 ```
-composer require konradx3/architect --dev
+composer require konradx3/architect-command-bundle --dev
 ```
 
 
