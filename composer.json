@@ -15,5 +15,13 @@
   "require": {
     "php": "8.*",
     "contao/core-bundle": "^5.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Architect\\ContaoCommandBundle\\": "src/"
+    }
+  },
+  "extra": {
+    "contao-manager-plugin": "Architect\\ContaoCommandBundle\\ContaoManager\\Plugin"
   }
 }
