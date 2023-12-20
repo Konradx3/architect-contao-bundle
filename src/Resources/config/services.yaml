@@ -1,0 +1,36 @@
+services:
+  Architect\ContaoCommandBundle\Command\MakeControllerCommand:
+    arguments:
+      - '@contao.framework'
+    tags:
+      - { name: 'console.command' }
+
+  Architect\ContaoCommandBundle\Command\AddControllerConfigurationCommand:
+    arguments:
+      - '@contao.framework'
+    tags:
+      - { name: 'console.command' }
+
+  Architect\ContaoCommandBundle\Command\MakeTemplateCommand:
+    arguments:
+      - '@contao.framework'
+    tags:
+      - { name: 'console.command' }
+
+  Architect\ContaoCommandBundle\Command\AddControllerDCACommand:
+    arguments:
+      - '@contao.framework'
+    tags:
+      - { name: 'console.command' }
+
+  Architect\ContaoCommandBundle\Command\MakeContentElementCommand:
+    arguments:
+      - '@contao.framework'
+    tags:
+      - { name: 'console.command' }
+
+  Architect\ContaoCommandBundle\Command\MakeFrontendModuleCommand:
+    arguments:
+      - '@contao.framework'
+    tags:
+      - { name: 'console.command' }
