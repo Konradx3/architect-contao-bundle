@@ -23,7 +23,7 @@ class AddControllerConfigurationCommand extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure() :void
     {
         $this
             ->setDescription('Add controller configuration to services.yaml')
@@ -81,20 +81,20 @@ class AddControllerConfigurationCommand extends Command
     {
         $configuration = <<<YAML
 
-    $namespace\\$controllerName:
-        tags:
-            - name: contao.$type
-              category: $category
-              template: $template
-              renderer: forward
-              type: $template
-              
-YAML;
+            $namespace\\$controllerName:
+                tags:
+                    - name: contao.$type
+                      category: $category
+                      template: $template
+                      renderer: forward
+                      type: $template
+                      
+        YAML;
 
         return $configuration;
     }
 
-    private function createServicesYmlFile($directory, $output)
+    private function createServicesYmlFile($directory, $output): void
     {
         if (!is_dir($directory))
         {
@@ -104,13 +104,13 @@ YAML;
         $filePath = $directory . '/services.yaml';
 
         $defaultContent = <<<YAML
-services:
-    _defaults:
-        autowire: true
-        autoconfigure: true
-        public: true
-        
-YAML;
+        services:
+            _defaults:
+                autowire: true
+                autoconfigure: true
+                public: true
+                
+        YAML;
 
         file_put_contents($filePath, $defaultContent);
 

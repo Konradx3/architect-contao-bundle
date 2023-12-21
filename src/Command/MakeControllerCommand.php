@@ -29,7 +29,8 @@ class MakeControllerCommand extends Command
             ->setDescription('Creates a new controller in a specified directory')
             ->addArgument('name', InputArgument::REQUIRED, 'Controller name')
             ->addArgument('type', InputArgument::OPTIONAL, 'Type of controller (FMD or CTE)')
-            ->addArgument('directory', InputArgument::OPTIONAL, 'Directory to create the controller in in custom bundle /src/Controller');
+            ->addArgument('directory', InputArgument::OPTIONAL, 'Directory to create the controller in in custom bundle /src/Controller')
+            ->addOption('namespace', null, InputOption::VALUE_OPTIONAL, 'Type custom namespace');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -39,14 +40,21 @@ class MakeControllerCommand extends Command
         $name = $input->getArgument('name');
         $directory = $input->getArgument('directory') ? $input->getArgument('directory') . '/src/Controller' : 'App/src/Controller';
         $type = strtoupper($input->getArgument('type'));
+        $namespace = $input->getOption('namespace') ?: 'App';
 
         if ($type === 'CTE')
         {
             $directory .= '/ContentElement';
+            $namespace .= '\Controller\ContentElement';
         }
         elseif ($type === 'FMD')
         {
             $directory .= '/FrontendModule';
+            $namespace .= '\Controller\FrontendModule';
+        }
+        else
+        {
+            $namespace .= '\Controller';
         }
 
         $filePath = $directory . '/' . $name . '.php';
@@ -58,16 +66,16 @@ class MakeControllerCommand extends Command
             return Command::FAILURE;
         }
 
-        $filePath = $this->generateControllerFile($name, $directory, $type);
+        $filePath = $this->generateControllerFile($name, $directory, $type, $namespace);
 
         $output->writeln("Controller file generated successfully: $filePath");
 
         return Command::SUCCESS;
     }
 
-    private function generateControllerFile($controllerName, $directory, $type)
+    private function generateControllerFile($controllerName, $directory, $type, $namespace)
     {
-        $controllerContent = $this->generateControllerContent($controllerName, $type);
+        $controllerContent = $this->generateControllerContent($controllerName, $type, $namespace);
 
         if (!is_dir($directory))
         {
@@ -81,7 +89,7 @@ class MakeControllerCommand extends Command
         return $filePath;
     }
 
-    private function generateControllerContent($controllerName, $type)
+    private function generateControllerContent($controllerName, $type, $namespace)
     {
         $constType = lcfirst(str_replace('Controller', '', $controllerName));
         switch ($type)
@@ -92,7 +100,7 @@ class MakeControllerCommand extends Command
                 $content = <<<PHP
                     <?php
                         
-                    namespace App\\Controller\\ContentElement;
+                    namespace $namespace;
                     
                     use Contao\\ContentModel;
                     use Contao\\CoreBundle\\Controller\\ContentElement\\AbstractContentElementController;
@@ -120,7 +128,7 @@ class MakeControllerCommand extends Command
                 $content = <<<PHP
                     <?php
                         
-                    namespace App\\Controller\\FrontendModule;
+                    namespace $namespace;
                     
                     use Contao\\CoreBundle\\Controller\\FrontendModule\\AbstractFrontendModuleController;
                     use Contao\\CoreBundle\\DependencyInjection\\Attribute\\AsFrontendModule;
