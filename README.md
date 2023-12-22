@@ -17,6 +17,17 @@ composer require konradx3/architect-command-bundle --dev
 You can change and configure each generated file to suit your needs.
 It's just a generator
 
+### Create custom bundle.
+```
+php contao-console architect:create:bundle [bundleName] [directory] [--namespace]
+```
+- [controller] - optional, CustomContaoApp or CustomContaoAppBundle, default AppBundle
+- [directory] - optional, path/your/custom-bundle, default App/src/...
+- [--namespace] - optional, if you need custom namespace you can type here your namespace
+
+##### Important
+It will add to .env file BUNDLE_NAMESPACE variable for remember your namespace, when you will create content elements you don't have to type --namespace all time
+
 ### Generate content element.
 ```
 php contao-console architect:make:content-element [controller] [directory] [--namespace]
