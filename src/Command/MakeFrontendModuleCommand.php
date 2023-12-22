@@ -47,7 +47,7 @@ class MakeFrontendModuleCommand extends Command
             'name' => $controllerName,
             'type' => $type,
             'directory' => $path,
-            'namespace' => $namespace,
+            '--namespace' => $namespace,
         ], $output);
 
         $this->callCommand('architect:make:controller-config-services', [

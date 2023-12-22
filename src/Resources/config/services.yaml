@@ -34,3 +34,14 @@ services:
       - '@contao.framework'
     tags:
       - { name: 'console.command' }
+
+  Dotenv:
+    class: Symfony\Component\Dotenv\Dotenv
+
+  Architect\ContaoCommandBundle\Command\CreateBundleCommand:
+    arguments:
+      $framework: '@contao.framework'
+      $parameterBag: '@parameter_bag'
+      $dotenv: '@Dotenv'
+    tags:
+      - { name: 'console.command' }
