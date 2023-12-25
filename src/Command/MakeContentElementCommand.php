@@ -40,6 +40,12 @@ class MakeContentElementCommand extends Command
         $this->framework->initialize();
 
         $controllerName = $input->getArgument('controllerName');
+
+        if (!str_contains($controllerName, 'Controller'))
+        {
+            $controllerName .= 'Controller';
+        }
+
         $type = 'CTE';
         $path = $input->getArgument('directory');
         $namespace = $input->getOption('namespace') ?: NamespaceManager::getNamespace();
