@@ -3,6 +3,7 @@
 
 namespace Architect\ContaoCommandBundle\Command;
 
+use Architect\ContaoCommandBundle\Helper\FileManager;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -52,34 +53,17 @@ class MakeTemplateCommand extends Command
 
         $filePath = $directory . '/' . $template . '.html.twig';
 
-        if (file_exists($filePath))
+        if (FileManager::fileExists($filePath))
         {
             $output->writeln("Error: A file with the name '$name.html.twig' already exists in the specified directory.");
-
             return Command::FAILURE;
         }
 
-        $filePath = $this->generateControllerFile($template, $directory, $type);
+        FileManager::createFile($filePath, $this->generateControllerContent($name, $type));
 
         $output->writeln("Twig template file generated successfully: $filePath");
 
         return Command::SUCCESS;
-    }
-
-    private function generateControllerFile($template, $directory, $type)
-    {
-        $controllerContent = $this->generateControllerContent($template, $type);
-
-        if (!is_dir($directory))
-        {
-            mkdir($directory, 0777, true);
-        }
-
-        $filePath = $directory . '/' . $template . '.html.twig';
-
-        file_put_contents($filePath, $controllerContent);
-
-        return $filePath;
     }
 
     private function generateControllerContent($template, $type)

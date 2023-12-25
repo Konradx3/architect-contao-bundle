@@ -3,6 +3,7 @@
 
 namespace Architect\ContaoCommandBundle\Command;
 
+use Architect\ContaoCommandBundle\Helper\NamespaceManager;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -41,7 +42,7 @@ class MakeFrontendModuleCommand extends Command
         $controllerName = $input->getArgument('controllerName');
         $type = 'FMD';
         $path = $input->getArgument('directory');
-        $namespace = $input->getOption('namespace');
+        $namespace = $input->getOption('namespace') ?: NamespaceManager::getNamespace();
 
         $this->callCommand('architect:make:controller', [
             'name' => $controllerName,

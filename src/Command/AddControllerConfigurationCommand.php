@@ -3,6 +3,8 @@
 
 namespace Architect\ContaoCommandBundle\Command;
 
+use Architect\ContaoCommandBundle\Helper\FileManager;
+use Architect\ContaoCommandBundle\Helper\NamespaceManager;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -40,7 +42,7 @@ class AddControllerConfigurationCommand extends Command
         $name = $input->getArgument('name');
         $type = strtoupper($input->getArgument('type'));
         $template = lcfirst(str_replace('Controller', '', $name));
-        $namespace = $input->getOption('namespace') ?: 'App';
+        $namespace = $input->getOption('namespace') ?: NamespaceManager::getNamespace();
 
         if ($type === 'CTE')
         {
@@ -64,14 +66,24 @@ class AddControllerConfigurationCommand extends Command
         $directory = $input->getArgument('directory') ? $input->getArgument('directory') . '/src/Resources/config' : 'App/src/Resources/config';
         $servicesYamlPath = $directory . '/services.yaml';
 
-        if (!file_exists($servicesYamlPath))
+        if (!FileManager::fileExists($servicesYamlPath))
         {
-            $this->createServicesYmlFile($directory, $output);
+            $defaultContent = <<<YAML
+                services:
+                    _defaults:
+                        autowire: true
+                        autoconfigure: true
+                        public: true
+                        
+                YAML;
+
+            FileManager::createFile($servicesYamlPath, $defaultContent);
+            $output->writeln('Created services.yaml with default content.');
         }
 
         $configuration = $this->generateControllerConfiguration($name, $namespace, $elementType, $category, $template);
 
-        file_put_contents($servicesYamlPath, $configuration, FILE_APPEND);
+        FileManager::appendToFile($servicesYamlPath, $configuration);
 
         $output->writeln('Controller configuration added to services.yaml');
         return Command::SUCCESS;
@@ -94,26 +106,4 @@ class AddControllerConfigurationCommand extends Command
         return $configuration;
     }
 
-    private function createServicesYmlFile($directory, $output): void
-    {
-        if (!is_dir($directory))
-        {
-            mkdir($directory, 0777, true);
-        }
-
-        $filePath = $directory . '/services.yaml';
-
-        $defaultContent = <<<YAML
-        services:
-            _defaults:
-                autowire: true
-                autoconfigure: true
-                public: true
-                
-        YAML;
-
-        file_put_contents($filePath, $defaultContent);
-
-        $output->writeln('Created services.yaml with default content.');
-    }
 }

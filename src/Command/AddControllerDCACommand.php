@@ -3,6 +3,7 @@
 
 namespace Architect\ContaoCommandBundle\Command;
 
+use Architect\ContaoCommandBundle\Helper\FileManager;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -60,64 +61,35 @@ class AddControllerDCACommand extends Command
             return Command::FAILURE;
         }
 
-        if (!file_exists($directory))
+        if (!FileManager::fileExists($directory))
         {
-            $this->createEmptyFile($directory, $output);
+            FileManager::createFile($directory, "<?php\n");
+            $output->writeln("Created empty file: $directory");
         }
 
-        $file = fopen($directory, 'r');
-
-        if ($file)
-        {
-            $lines = file($directory);
-
-            if ($type === 'CTE')
-            {
-                $lines[0] = "<?php\n\$GLOBALS['TL_DCA']['tl_content']['palettes']['$controllerType'] = '{type_legend},type,headline;{template_legend:hide},customTpl;{protected_legend:hide},protected;{expert_legend:hide},cssID;{invisible_legend:hide},invisible,start,stop';\n";
-            }
-            elseif ($type === 'FMD')
-            {
-                $lines[0] = "<?php\n\$GLOBALS['TL_DCA']['tl_module']['palettes']['$controllerType'] = '{type_legend},name,type,headline;{template_legend:hide},customTpl;{protected_legend:hide},protected;{expert_legend:hide},cssID;{invisible_legend:hide},invisible,start,stop';\n";
-            }
-
-            $newContent = implode('', $lines);
-
-            fclose($file);
-
-            $file = fopen($directory, 'w');
-
-            if ($file)
-            {
-                fwrite($file, $newContent);
-                fclose($file);
-
-                $output->writeln('Added config to dca');
-                return Command::SUCCESS;
-            }
-            else
-            {
-                $output->writeln('Error: Unable to open the file for writing.');
-                return Command::FAILURE;
-            }
-        }
-        else
+        if (FileManager::canOpenFile($directory) === false)
         {
             $output->writeln('Error: Unable to open the file for reading.');
             return Command::FAILURE;
         }
 
-    }
+        $lines = file($directory);
 
-    private function createEmptyFile($directory, $output)
-    {
-        if (file_put_contents($directory, "<?php\n") !== false)
+        if ($type === 'CTE')
         {
-            $output->writeln("Created empty file: $directory");
+            $lines[0] = "<?php\n\$GLOBALS['TL_DCA']['tl_content']['palettes']['$controllerType'] = '{type_legend},type,headline;{template_legend:hide},customTpl;{protected_legend:hide},protected;{expert_legend:hide},cssID;{invisible_legend:hide},invisible,start,stop';\n";
         }
-        else
+        elseif ($type === 'FMD')
         {
-            $output->writeln('Error: Unable to create an empty file.');
-            exit(Command::FAILURE);
+            $lines[0] = "<?php\n\$GLOBALS['TL_DCA']['tl_module']['palettes']['$controllerType'] = '{type_legend},name,type,headline;{template_legend:hide},customTpl;{protected_legend:hide},protected;{expert_legend:hide},cssID;{invisible_legend:hide},invisible,start,stop';\n";
         }
+
+        $content = implode('', $lines);
+
+        FileManager::createFile($directory, $content);
+
+        $output->writeln('Added config to dca');
+        return Command::SUCCESS;
+
     }
 }

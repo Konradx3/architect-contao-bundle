@@ -1,8 +1,9 @@
 <?php
-// src/Command/MakeControllerCommand.php
 
 namespace Architect\ContaoCommandBundle\Command;
 
+use Architect\ContaoCommandBundle\Helper\FileManager;
+use Architect\ContaoCommandBundle\Helper\NamespaceManager;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -40,7 +41,7 @@ class MakeControllerCommand extends Command
         $name = $input->getArgument('name');
         $directory = $input->getArgument('directory') ? $input->getArgument('directory') . '/src/Controller' : 'App/src/Controller';
         $type = strtoupper($input->getArgument('type'));
-        $namespace = $input->getOption('namespace') ?: 'App';
+        $namespace = $input->getOption('namespace') ?: NamespaceManager::getNamespace();
 
         if ($type === 'CTE')
         {
@@ -59,34 +60,17 @@ class MakeControllerCommand extends Command
 
         $filePath = $directory . '/' . $name . '.php';
 
-        if (file_exists($filePath))
+        if (FileManager::fileExists($filePath))
         {
             $output->writeln("Error: A file with the name '$name.php' already exists in the specified directory.");
-
             return Command::FAILURE;
         }
 
-        $filePath = $this->generateControllerFile($name, $directory, $type, $namespace);
+        FileManager::createFile($filePath, $this->generateControllerContent($name, $type, $namespace));
 
         $output->writeln("Controller file generated successfully: $filePath");
 
         return Command::SUCCESS;
-    }
-
-    private function generateControllerFile($controllerName, $directory, $type, $namespace)
-    {
-        $controllerContent = $this->generateControllerContent($controllerName, $type, $namespace);
-
-        if (!is_dir($directory))
-        {
-            mkdir($directory, 0777, true);
-        }
-
-        $filePath = $directory . '/' . $controllerName . '.php';
-
-        file_put_contents($filePath, $controllerContent);
-
-        return $filePath;
     }
 
     private function generateControllerContent($controllerName, $type, $namespace)
@@ -140,7 +124,7 @@ class MakeControllerCommand extends Command
                     #[AsFrontendModule($controllerName::TYPE, category: 'categoryFrontendModule')] /* Change category name */
                     class $controllerName extends AbstractFrontendModuleController
                     {
-                        public const TYPE = '$controllerName';  /* Frontend Module name */
+                        public const TYPE = '$constType';  /* Frontend Module name */
                     
                         protected function getResponse(FragmentTemplate \$template, ModuleModel \$model, Request \$request): Response
                         {   

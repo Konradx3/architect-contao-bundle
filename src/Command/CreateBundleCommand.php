@@ -3,6 +3,8 @@
 
 namespace Architect\ContaoCommandBundle\Command;
 
+use Architect\ContaoCommandBundle\Helper\FileManager;
+use Architect\ContaoCommandBundle\Helper\NamespaceManager;
 use Contao\CoreBundle\ContaoCoreBundle;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\ManagerPlugin\Bundle\BundlePluginInterface;
@@ -18,7 +20,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Dotenv\Dotenv;
-use Symfony\Component\Filesystem\Filesystem;
 
 class CreateBundleCommand extends Command
 {
@@ -58,9 +59,13 @@ class CreateBundleCommand extends Command
         }
 
         $directory = $input->getArgument('directory');
-        $envVariable = 'BUNDLE_NAMESPACE';
+        $namespace = NamespaceManager::getNamespace();
 
-        $namespace = $this->setBundleNamespace($envVariable, $input, $output);
+        if ($input->hasOption('namespace') && $input->getOption('namespace'))
+        {
+            $namespace = $input->getOption('namespace');
+            NamespaceManager::setNamespace($namespace);
+        }
 
         $filesToGenerate = [
             'Bundle' => $directory . '/src/' . $bundleName . 'Bundle.php',
@@ -71,74 +76,24 @@ class CreateBundleCommand extends Command
 
         foreach ($filesToGenerate as $fileName => $filePath)
         {
-            if ($this->fileExists($filePath, $output))
+            if (FileManager::canOpenFile($filePath))
             {
+                $output->writeln("You are trying to create a bundle within an already existing structure. Please provide another path");
                 return Command::FAILURE;
             }
 
-            $this->generateFile($bundleName, $fileName, $namespace, $filePath, $output);
+            FileManager::createFile($filePath);
+            $this->generateFile($bundleName, $fileName, $namespace, $filePath);
         }
 
         return Command::SUCCESS;
     }
 
-    private function setBundleNamespace($envVariable, InputInterface $input, OutputInterface $output): string
-    {
-        $envFilePath = $this->parameterBag->get('kernel.project_dir') . '/.env';
-        $this->dotenv->load($envFilePath);
-
-        if (isset($_ENV[$envVariable]))
-        {
-            $namespace = $_ENV[$envVariable];
-            $output->writeln("$envVariable is set to: $namespace");
-
-            return $namespace;
-        }
-
-        $providedNamespace = $input->getOption('namespace');
-        if (!$providedNamespace)
-        {
-            $providedNamespace = 'App\\AppBundle';
-        }
-
-        if (!str_contains($providedNamespace, 'Bundle'))
-        {
-            $providedNamespace .= 'Bundle';
-        }
-
-        $_ENV[$envVariable] = $providedNamespace;
-
-        file_put_contents($envFilePath, "\n$envVariable=\"{$_ENV[$envVariable]}\"\n", FILE_APPEND);
-
-        $output->writeln("$envVariable is not set in .env. Created and set to: {$_ENV[$envVariable]}");
-
-        return $_ENV[$envVariable];
-    }
-
-
-    private function generateFile($bundleName, $fileName, $namespace, $filePath, $output): void
+    private function generateFile($bundleName, $fileName, $namespace, $filePath): void
     {
         $content = $this->generateFileContent($bundleName, $fileName, $namespace);
 
-        $this->createOrUpdateFile($filePath, $content);
-    }
-
-    private function createOrUpdateFile($filePath, $content): void
-    {
-        $filesystem = new Filesystem();
-        $filesystem->dumpFile($filePath, $content);
-    }
-
-    private function fileExists($filePath, $output): bool
-    {
-        if (file_exists($filePath))
-        {
-            $output->writeln("Error: A file with the name '$filePath' already exists.");
-
-            return true;
-        }
-
-        return false;
+        FileManager::appendToFile($filePath, $content);
     }
 
     private function generateFileContent($bundleName, $fileName, $namespace): string
